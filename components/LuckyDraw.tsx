@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Participant } from '../types';
 
+import { playTickSound, playWinSound } from '../services/audioEffects';
+
 interface LuckyDrawProps {
   participants: Participant[];
 }
@@ -13,7 +15,7 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
   const [winner, setWinner] = useState<Participant | null>(null);
   const [reelName, setReelName] = useState<string>('???');
   const [history, setHistory] = useState<Participant[]>([]);
-  
+
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -36,6 +38,9 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
     const interval = 80;
 
     const tick = () => {
+      // Play tick sound
+      playTickSound();
+
       const randomIndex = Math.floor(Math.random() * remainingPool.length);
       setReelName(remainingPool[randomIndex].name);
       counter++;
@@ -58,6 +63,9 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
     setReelName(finalWinner.name);
     setHistory(prev => [finalWinner, ...prev]);
     setIsDrawing(false);
+
+    // Play win sound
+    playWinSound();
 
     // Confetti effect
     if ((window as any).confetti) {
@@ -90,7 +98,7 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
             <span className="text-sm font-medium text-slate-700">重複抽取</span>
-            <button 
+            <button
               onClick={() => setAllowRepeat(!allowRepeat)}
               className={`w-12 h-6 rounded-full transition-colors relative ${allowRepeat ? 'bg-indigo-600' : 'bg-slate-300'}`}
             >
@@ -101,7 +109,7 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
             <p className="text-xs text-slate-500 mb-1">目前剩餘人數</p>
             <p className="text-2xl font-bold text-indigo-600">{remainingPool.length}</p>
           </div>
-          <button 
+          <button
             onClick={reset}
             className="w-full py-2 text-sm font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
           >
@@ -118,7 +126,7 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
               Lucky Draw
             </span>
           </div>
-          
+
           <div className={`text-6xl md:text-8xl font-black mb-12 text-center h-24 flex items-center transition-all duration-75 ${isDrawing ? 'scale-110 text-indigo-500 blur-[1px]' : winner ? 'text-indigo-600 scale-100' : 'text-slate-300'}`}>
             {reelName}
           </div>
@@ -127,8 +135,8 @@ const LuckyDraw: React.FC<LuckyDrawProps> = ({ participants }) => {
             disabled={isDrawing || remainingPool.length === 0}
             onClick={startDraw}
             className={`px-12 py-4 rounded-full text-xl font-bold shadow-xl transform active:scale-95 transition-all
-              ${isDrawing || remainingPool.length === 0 
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+              ${isDrawing || remainingPool.length === 0
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-indigo-200'}`}
           >
             {isDrawing ? '正在抽取...' : remainingPool.length === 0 ? '抽取完畢' : '開始抽取'}
